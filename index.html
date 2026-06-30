@@ -623,6 +623,40 @@
     }
     .score-scroll-inner { min-width: 640px; }
 
+    /* ── MAKINANO TABLE (single swipeable row) ── */
+    .makinano-table {
+      display: flex;
+      gap: 8px;
+    }
+    .makinano-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 8px;
+      min-width: 92px;
+      flex-shrink: 0;
+    }
+    .makinano-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .makinano-items { font-size: 0.62rem; color: var(--muted); margin-bottom: 2px; }
+    .makinano-input-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.03em; margin-top: 2px; }
+    .makinano-input { width: 64px; margin-top: 2px; }
+    .makinano-rating {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
     .score-group { margin-bottom: 18px; }
     .score-col-headers, .score-phase-headers, .score-row {
       display: grid;
@@ -1018,13 +1052,13 @@
   <div style="padding: 20px 16px 4px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
     <div>
       <div style="font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700;">PNLE Score Tracker</div>
-      <div style="font-size:0.75rem; color:var(--muted); margin-top:3px;">Diagnostic, pre-test, post-test &amp; active recall scores</div>
+      <div style="font-size:0.75rem; color:var(--muted); margin-top:3px;">Makinano scores per test bank</div>
     </div>
     <button class="reset-btn" onclick="confirmResetScores()" style="flex-shrink:0;">Reset</button>
   </div>
 
   <div class="score-scroll">
-    <div class="score-scroll-inner" id="score-groups"></div>
+    <div class="makinano-table" id="makinano-table"></div>
   </div>
 
   <div class="section-label" style="margin-top:8px;">Comprehensive Exams</div>
@@ -1068,7 +1102,7 @@
 <div class="modal-overlay" id="reset-scores-modal">
   <div class="modal">
     <h3>Reset score tracker?</h3>
-    <p>This clears all entered Diagnostic/Pre-test/Post-test/Active Recall scores and restores the Comprehensive Exam table to its original starting values. This cannot be undone.</p>
+    <p>This clears all entered Makinano test bank scores and restores the Comprehensive Exam table to its original starting values. This cannot be undone.</p>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeScoresModal()">Cancel</button>
       <button class="btn-confirm" onclick="doResetScores()">Reset Scores</button>
@@ -1594,71 +1628,19 @@ const NP_DATA = [
 ];
 
 // ══════════════════════════════════════════════
-//  SCORE TRACKER DATA — PNLE Score Tracker
+//  SCORE TRACKER DATA — Makinano Test Bank Scores
 // ══════════════════════════════════════════════
-// Items per exam phase are fixed (from the official tracker sheet).
-// Scores are entered by the user and persisted to localStorage.
-const SCORE_GROUPS = [
-  {
-    id: 'np1', name: 'NP1', color: 0,
-    items: { diag: 100, pre: 40, post: 100, ar: 200 },
-    subs: [
-      { id: 'chn', name: 'CHN', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'infectious', name: 'Infectious', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-    ]
-  },
-  {
-    id: 'np2', name: 'NP2', color: 1,
-    items: { diag: 100, pre: 40, post: 100, ar: 200 },
-    subs: [
-      { id: 'obgyn', name: 'OB-GYN', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'pedia', name: 'Pedia', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-    ]
-  },
-  {
-    id: 'np3', name: 'NP3', color: 2,
-    items: { diag: 300, pre: 120, post: 300, ar: 600 },
-    subs: [
-      { id: 'pulmo', name: 'Pulmo', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'hema', name: 'Hema', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'cardio', name: 'Cardio', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'gastro', name: 'Gastro', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'endo', name: 'Endo', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'periop', name: 'Periop', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-    ]
-  },
-  {
-    id: 'np4', name: 'NP4', color: 3,
-    items: { diag: 300, pre: 120, post: 300, ar: 600 },
-    subs: [
-      { id: 'nephro', name: 'Nephro', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'immuno', name: 'Immuno', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'onco', name: 'Onco', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'derma', name: 'Derma', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'emergency', name: 'Emergency', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'fluidelec', name: 'Fluid-Elec, Acid-Base', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-    ]
-  },
-  {
-    id: 'np5', name: 'NP5', color: 4,
-    items: { diag: 200, pre: 80, post: 200, ar: 400 },
-    subs: [
-      { id: 'psych', name: 'Psych', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'neuro', name: 'Neuro', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'eent', name: 'EENT', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'ortho', name: 'Ortho', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'geria', name: 'Geria', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-    ]
-  },
-  {
-    id: 'palmerj', name: 'PALMERJ', color: 1,
-    items: { diag: 150, pre: 60, post: 150, ar: 300 },
-    subs: [
-      { id: 'profadj', name: 'Prof Adj, Ethics, Juris', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'lm', name: 'L&M', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-      { id: 'research', name: 'Research', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
-    ]
-  },
+// One row ("Makinano") with a column per test bank, swipeable left/right.
+// Rating formula: (score / items) * 65 + 35
+const MAKINANO_BANKS = [
+  { id: 'funda', name: 'Funda', items: 100, color: 0 },
+  { id: 'pastboard', name: 'Past Board', items: 100, color: 1 },
+  { id: 'neuromusculo', name: 'NeurMusculo', items: 150, color: 2 },
+  { id: 'pedia', name: 'Pedia', items: 100, color: 3 },
+  { id: 'gi', name: 'GI', items: 100, color: 4 },
+  { id: 'pharma', name: 'Pharma', items: 100, color: 0 },
+  { id: 'oxygenation', name: 'Oxygenation', items: 75, color: 1 },
+  { id: 'infectious', name: 'Infectious', items: 100, color: 2 },
 ];
 
 const COMP_EXAM_DATES = ['2/10','2/17','2/24','3/2','3/9','3/16','3/23','3/30','4/6','4/13','4/20','4/27'];
@@ -1854,152 +1836,58 @@ function handleTopicClick(event, npId, gi, ti) {
 }
 
 // ══════════════════════════════════════════════
-//  PNLE SCORE TRACKER
+//  MAKINANO SCORE TRACKER
 // ══════════════════════════════════════════════
-const PHASES = ['diag', 'pre', 'post', 'ar'];
-
-function getScore(groupId, subId, phase) {
-  const v = scoreData[`${groupId}_${subId}_${phase}`];
+// Rating formula: (score / items) * 65 + 35
+function getMakinano(bankId) {
+  const v = scoreData[`makinano_${bankId}`];
   return (v === undefined || v === null || v === '') ? null : Number(v);
 }
-function setScore(groupId, subId, phase, value) {
-  const key = `${groupId}_${subId}_${phase}`;
+function setMakinano(bankId, value) {
+  const key = `makinano_${bankId}`;
   if (value === '' || value === null) delete scoreData[key];
   else scoreData[key] = Number(value);
   saveScores(scoreData);
 }
-function pct(score, items) {
+function makinanoRating(score, items) {
   if (score === null || !items) return null;
-  return (score / items) * 100;
+  return (score / items) * 65 + 35;
 }
-function fmtPct(p) {
-  return p === null ? '0.00%' : p.toFixed(2) + '%';
-}
-
-function groupTotals(group, phase) {
-  // Sum of sub-scores for a phase (falls back gracefully if some are blank)
-  let sum = 0, any = false;
-  group.subs.forEach(s => {
-    const v = getScore(group.id, s.id, phase);
-    if (v !== null) { sum += v; any = true; }
-  });
-  return any ? sum : null;
-}
-function groupAveragePct(group) {
-  const pcts = PHASES.map(ph => {
-    const total = groupTotals(group, ph);
-    return pct(total, group.items[ph]);
-  }).filter(p => p !== null);
-  if (!pcts.length) return 0;
-  return pcts.reduce((a, b) => a + b, 0) / pcts.length;
-}
-function subAveragePct(group, sub) {
-  const pcts = PHASES.map(ph => pct(getScore(group.id, sub.id, ph), sub.items[ph])).filter(p => p !== null);
-  if (!pcts.length) return 0;
-  return pcts.reduce((a, b) => a + b, 0) / pcts.length;
+function fmtRating(r) {
+  return r === null ? '—' : r.toFixed(2);
 }
 
 function renderScoreTracker() {
-  const wrap = document.getElementById('score-groups');
-  wrap.innerHTML = SCORE_GROUPS.map(group => renderScoreGroup(group)).join('');
+  renderMakinanoTable();
   renderCompExams();
 }
 
-function renderScoreGroup(group) {
-  const groupAvg = groupAveragePct(group);
-  const headerRow = `
-    <div class="score-row score-row-group" id="score-group-row-${group.id}">
-      <div class="score-name c${group.color}">${group.name}</div>
-      ${PHASES.map(ph => {
-        const total = groupTotals(group, ph);
-        const p = pct(total, group.items[ph]);
-        return `
-          <div class="score-cell-group">
-            <div class="score-cell-items">${group.items[ph]}</div>
-            <div class="score-cell-num">${total === null ? '—' : total}</div>
-            <div class="score-cell-pct c${group.color}">${fmtPct(p)}</div>
-          </div>`;
-      }).join('')}
-      <div class="score-cell-ave c${group.color}" id="score-group-ave-${group.id}">${fmtPct(groupAvg)}</div>
-    </div>
-  `;
-
-  const subRows = group.subs.map(sub => {
-    const subAvg = subAveragePct(group, sub);
+function renderMakinanoTable() {
+  const wrap = document.getElementById('makinano-table');
+  wrap.innerHTML = MAKINANO_BANKS.map(bank => {
+    const score = getMakinano(bank.id);
+    const rating = makinanoRating(score, bank.items);
     return `
-      <div class="score-row score-row-sub" id="score-sub-row-${group.id}-${sub.id}">
-        <div class="score-name score-name-sub">${sub.name}</div>
-        ${PHASES.map(ph => {
-          const score = getScore(group.id, sub.id, ph);
-          const p = pct(score, sub.items[ph]);
-          return `
-            <div class="score-cell">
-              <div class="score-cell-items">${sub.items[ph]}</div>
-              <input type="number" inputmode="numeric" min="0" max="${sub.items[ph]}"
-                class="score-input" value="${score === null ? '' : score}"
-                placeholder="0"
-                oninput="onScoreInput('${group.id}','${sub.id}','${ph}', this.value)" />
-              <div class="score-cell-pct" id="score-pct-${group.id}-${sub.id}-${ph}">${fmtPct(p)}</div>
-            </div>`;
-        }).join('')}
-        <div class="score-cell-ave" id="score-sub-ave-${group.id}-${sub.id}">${fmtPct(subAvg)}</div>
-      </div>
-    `;
+      <div class="makinano-col">
+        <div class="makinano-name c${bank.color}">${bank.name}</div>
+        <div class="makinano-items">${bank.items} items</div>
+        <div class="makinano-input-label">Makinano</div>
+        <input type="number" inputmode="numeric" min="0" max="${bank.items}"
+          class="score-input makinano-input" value="${score === null ? '' : score}"
+          placeholder="0"
+          oninput="onMakinanoInput('${bank.id}', this.value)" />
+        <div class="makinano-rating c${bank.color}" id="makinano-rating-${bank.id}">${fmtRating(rating)}</div>
+      </div>`;
   }).join('');
-
-  return `
-    <div class="score-group">
-      <div class="score-col-headers">
-        <div class="score-name"></div>
-        <div class="score-cell-group">ITEMS</div>
-        <div class="score-cell-group">ITEMS</div>
-        <div class="score-cell-group">ITEMS</div>
-        <div class="score-cell-group">ITEMS</div>
-        <div class="score-cell-ave">AVE</div>
-      </div>
-      <div class="score-phase-headers">
-        <div class="score-name"></div>
-        <div class="score-cell-group">DIAGNOSTIC</div>
-        <div class="score-cell-group">PRE-TEST</div>
-        <div class="score-cell-group">POST-TEST</div>
-        <div class="score-cell-group">ACTIVE RECALL</div>
-        <div class="score-cell-ave"></div>
-      </div>
-      ${headerRow}
-      ${subRows}
-    </div>
-  `;
 }
 
-function onScoreInput(groupId, subId, phase, value) {
-  setScore(groupId, subId, phase, value);
-  const group = SCORE_GROUPS.find(g => g.id === groupId);
-  const sub = group.subs.find(s => s.id === subId);
-
-  // Update this cell's %
-  const score = getScore(groupId, subId, phase);
-  const p = pct(score, sub.items[phase]);
-  const pctEl = document.getElementById(`score-pct-${groupId}-${subId}-${phase}`);
-  if (pctEl) pctEl.textContent = fmtPct(p);
-
-  // Update sub-row average
-  const subAveEl = document.getElementById(`score-sub-ave-${groupId}-${subId}`);
-  if (subAveEl) subAveEl.textContent = fmtPct(subAveragePct(group, sub));
-
-  // Update group row (totals + group %) and group average
-  const total = groupTotals(group, phase);
-  const groupP = pct(total, group.items[phase]);
-  const groupRow = document.getElementById(`score-group-row-${groupId}`);
-  if (groupRow) {
-    const cells = groupRow.querySelectorAll('.score-cell-group');
-    const idx = PHASES.indexOf(phase);
-    if (cells[idx]) {
-      cells[idx].querySelector('.score-cell-num').textContent = total === null ? '—' : total;
-      cells[idx].querySelector('.score-cell-pct').textContent = fmtPct(groupP);
-    }
-  }
-  const groupAveEl = document.getElementById(`score-group-ave-${groupId}`);
-  if (groupAveEl) groupAveEl.textContent = fmtPct(groupAveragePct(group));
+function onMakinanoInput(bankId, value) {
+  setMakinano(bankId, value);
+  const bank = MAKINANO_BANKS.find(b => b.id === bankId);
+  const score = getMakinano(bankId);
+  const rating = makinanoRating(score, bank.items);
+  const ratingEl = document.getElementById(`makinano-rating-${bankId}`);
+  if (ratingEl) ratingEl.textContent = fmtRating(rating);
 }
 
 function resetScores() {
